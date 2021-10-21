@@ -35,10 +35,10 @@ namespace ns3 {
  * \brief this class implements the Winner Plus propagation loss model
  * 
  * this class implements the Winner Plus propagation loss model,
- * which is used to model open area pathloss for distances > 1 Km
- * and frequencies ranging from 150 MHz to 2.0 GHz. 
+ * which is used to model various area types
+ * and frequencies ranging from 450 MHz to 6.0 GHz. 
  * For more information about the model, please see
- * the propagation module documentation in .rst format.
+ * the Winner+ Final Channel Models (D5.3)
  */
 class WinnerPlusPropagationLossModel : public PropagationLossModel
 {
@@ -84,7 +84,7 @@ private:
   virtual int64_t DoAssignStreams (int64_t stream);
   
   WinnerPlusEnvironmentType m_environment;  //!< Environment Scenario
-  WinnerPlusLayoutType m_layout;  //!< Layout Type (Manhattan or Hexagonal)
+  WinnerPlusLayoutType m_layout;  //!< Layout Type (Manhattan or Hexagonal). At this moment, only Hexagonal is implemented
   bool m_los;  //!< Line of Sight (LOS or NLOS)
   double m_frequency; //!< Frequency in Hz
   double m_add_pathloss; //!< Additional Pathloss in dB

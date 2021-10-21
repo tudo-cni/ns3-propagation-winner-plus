@@ -1,6 +1,6 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2011, 2012 Centre Tecnologic de Telecomunicacions de Catalunya (CTTC)
+ * Copyright (c) 2011, 2012 Centre Tecnologic de Telecomunicacions de Catalunya (CTTC), 2021 TU Dortmund University
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  * Author: Marco Miozzo  <marco.miozzo@cttc.es>,
- *         Nicola Baldo <nbaldo@cttc.es>beep
- * 
+ *         Nicola Baldo <nbaldo@cttc.es>,
+ *         Pascal Jörke <pascal.joerke@tu-dortmund.de>
  */
 #include "ns3/log.h"
 #include "ns3/double.h"
@@ -46,6 +46,11 @@ WinnerPlusPropagationLossModel::GetTypeId (void)
                    "The propagation frequency in Hz",
                    DoubleValue (806e6),
                    MakeDoubleAccessor (&WinnerPlusPropagationLossModel::m_frequency),
+                   MakeDoubleChecker<double> ())
+    .AddAttribute ("AdditionalPathloss",
+                   "Additional Pathloss in dB",
+                   DoubleValue (0),
+                   MakeDoubleAccessor (&WinnerPlusPropagationLossModel::m_add_pathloss),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("LineOfSight",
                    "Whether or not line of sight is available",
@@ -85,16 +90,17 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   double loss = 0.0;
   double fghz = m_frequency / 1e9;
   NS_ASSERT_MSG (fghz >= 0.45 && fghz <= 6, "Frequency must be between 0.45 GHz and 6.0 GHz");
-  double dist = a->GetDistanceFrom (b) / 1000.0; 
+  double dist = a->GetDistanceFrom (b); 
+  //std::cout << "Winner Plus Distance:" << dist<< std::endl;
   // double hbs = (a->GetPosition ().z > b->GetPosition ().z ? a->GetPosition ().z : b->GetPosition ().z);
   double hbs = 10; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1
   // double hms = (a->GetPosition ().z < b->GetPosition ().z ? a->GetPosition ().z : b->GetPosition ().z);
   double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1
 
-  double dbp = 4*hbs*hMS*fghz/3e8;
+  double dbp = 4*hbs*hms*fghz/3e8;
   double h_tick_bs = hbs - 1.0;
   double h_tick_ms = hms - 1.0;
-  double d_tick_bp = 4*h_tick_bs*h_tick_MS*fghz/3e8;
+  double d_tick_bp = 4*h_tick_bs*h_tick_ms*fghz/3e8;
   if (m_environment == UMiEnvironment){
     if (m_los == true){
       loss = 22.7 * std::log10(dist) + 27.0 + 20.0 * std::log10(fghz);
@@ -113,16 +119,17 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IaEnvironment){
-    double din = 0.003; // Let's assume that the indoor range is 3m
+    double din = 3; // Let's assume that the indoor range is 3m
     double dout = dist - din;
+    double PLb = 0;
     if (fghz < 1.5){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
     }
     else if (fghz < 2.0){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 14.78 + 34.97 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 14.78 + 34.97 * std::log10(fghz);
     }
     else if (fghz < 6.0){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 18.38 + 23.00 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 18.38 + 23.00 * std::log10(fghz);
     }
     loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
@@ -169,19 +176,22 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IbEnvironment){
-    double din = 0.003 // Let's assume that the indoor range is 3m
-    double dout = dist - din
+    double din = 3; // Let's assume that the indoor range is 3m
+    double dout = dist - din;
+    double PLb = 0;
     if (fghz < 1.5){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
     }
     else if (fghz < 2.0){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 14.78 + 34.97 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 14.78 + 34.97 * std::log10(fghz);
     }
     else if (fghz < 6.0){
-      double PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 18.38 + 23.00 * std::log10(fghz);
+      PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 18.38 + 23.00 * std::log10(fghz);
     }
-    loss = PLb*(dout + din)) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
+    loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
+  //std::cout << "Winner Plus Loss:" << loss<< std::endl;
+  loss = loss + m_add_pathloss;
   return loss;
 }
 
