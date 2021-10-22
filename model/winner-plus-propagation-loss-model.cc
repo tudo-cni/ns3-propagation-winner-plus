@@ -92,10 +92,8 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   NS_ASSERT_MSG (fghz >= 0.45 && fghz <= 6, "Frequency must be between 0.45 GHz and 6.0 GHz");
   double dist = a->GetDistanceFrom (b); 
   //std::cout << "Winner Plus Distance:" << dist<< std::endl;
-  // double hbs = (a->GetPosition ().z > b->GetPosition ().z ? a->GetPosition ().z : b->GetPosition ().z);
-  double hbs = 10; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1
-  // double hms = (a->GetPosition ().z < b->GetPosition ().z ? a->GetPosition ().z : b->GetPosition ().z);
-  double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1
+  double hbs = 10.0; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
 
   double dbp = 4*hbs*hms*fghz/3e8;
   double h_tick_bs = hbs - 1.0;
@@ -119,7 +117,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IaEnvironment){
-    double din = 3; // Let's assume that the indoor range is 3m
+    double din = 3.0; // Let's assume that the indoor range is 3m
     double dout = dist - din;
     double PLb = 0;
     if (fghz < 1.5){
@@ -131,7 +129,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     else if (fghz < 6.0){
       PLb = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 18.38 + 23.00 * std::log10(fghz);
     }
-    loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
+    loss = PLb*(dout + din) + 21.04 + 14.0*(1.0-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
   else if (m_environment == SMaEnvironment){
     if (m_los == true){
@@ -176,7 +174,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IbEnvironment){
-    double din = 3; // Let's assume that the indoor range is 3m
+    double din = 3.0; // Let's assume that the indoor range is 3m
     double dout = dist - din;
     double PLb = 0;
     if (fghz < 1.5){
