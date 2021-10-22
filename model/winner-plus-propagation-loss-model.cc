@@ -91,7 +91,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   double fghz = m_frequency / 1e9;
   NS_ASSERT_MSG (fghz >= 0.45 && fghz <= 6, "Frequency must be between 0.45 GHz and 6.0 GHz");
   double dist = a->GetDistanceFrom (b); 
-  //std::cout << "Winner Plus Distance:" << dist<< std::endl;
+  std::cout << "Winner Plus Distance:" << dist<< std::endl;
   double hbs = 10.0; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
   double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
 
@@ -188,7 +188,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
     loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
-  //std::cout << "Winner Plus Loss:" << loss<< std::endl;
+  std::cout << "Winner Plus Loss:" << loss<< std::endl;
   loss = loss + m_add_pathloss;
   return loss;
 }
