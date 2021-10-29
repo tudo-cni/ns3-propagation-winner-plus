@@ -54,6 +54,30 @@ public:
   WinnerPlusPropagationLossModel ();
   virtual ~WinnerPlusPropagationLossModel ();
 
+  /**
+   * \brief Set the central frequency of the model
+   * \param f the central frequency in the range in Hz, between 450.0e6 and 6.0e9 Hz
+   */
+  void SetFrequency (double f);
+
+  /**
+   * \brief Set the height of the baste station
+   * \param height_bs The height of the Base station in meters
+   */
+  void SetHeightBs (double height_bs);
+
+  /**
+   * \brief Set whether Line Of Sight is available or not
+   * \param los bool to enable or disable Line Of Sight
+   */
+  void SetLOS (bool los);
+
+  /**
+   * \brief Set the environment type
+   * \param env Choose a decent environment type
+   */
+  void SetEnvironment (WinnerPlusEnvironmentType env);
+
   /** 
    * \param a the first mobility model
    * \param b the second mobility model
@@ -87,7 +111,7 @@ private:
   WinnerPlusLayoutType m_layout;  //!< Layout Type (Manhattan or Hexagonal). At this moment, only Hexagonal is implemented
   bool m_los;  //!< Line of Sight (LOS or NLOS)
   double m_frequency; //!< Frequency in Hz
-  double m_add_pathloss; //!< Additional Pathloss in dB
+  double m_height_bs; //!< Additional Pathloss in dB
 };
 
 } // namespace ns3

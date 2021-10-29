@@ -47,10 +47,10 @@ WinnerPlusPropagationLossModel::GetTypeId (void)
                    DoubleValue (806e6),
                    MakeDoubleAccessor (&WinnerPlusPropagationLossModel::m_frequency),
                    MakeDoubleChecker<double> ())
-    .AddAttribute ("AdditionalPathloss",
-                   "Additional Pathloss in dB",
-                   DoubleValue (0),
-                   MakeDoubleAccessor (&WinnerPlusPropagationLossModel::m_add_pathloss),
+    .AddAttribute ("HeightBasestation",
+                   "Height of the Base Station in [m]",
+                   DoubleValue (10.0),
+                   MakeDoubleAccessor (&WinnerPlusPropagationLossModel::m_height_bs),
                    MakeDoubleChecker<double> ())
     .AddAttribute ("LineOfSight",
                    "Whether or not line of sight is available",
@@ -84,6 +84,34 @@ WinnerPlusPropagationLossModel::~WinnerPlusPropagationLossModel ()
 {
 }
 
+void
+WinnerPlusPropagationLossModel::SetFrequency (double frequency)
+{
+  NS_LOG_FUNCTION (this);
+  m_frequency = frequency;
+}
+
+void
+WinnerPlusPropagationLossModel::SetHeightBs (double height_bs)
+{
+  NS_LOG_FUNCTION (this);
+  m_height_bs = height_bs;
+}
+
+void
+WinnerPlusPropagationLossModel::SetLOS (bool los)
+{
+  NS_LOG_FUNCTION (this);
+  m_los = los;
+}
+
+void
+WinnerPlusPropagationLossModel::SetEnvironment (WinnerPlusEnvironmentType env)
+{
+  NS_LOG_FUNCTION (this);
+  m_environment = env;
+}
+
 double
 WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel> b) const
 {
@@ -91,9 +119,24 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   double fghz = m_frequency / 1e9;
   NS_ASSERT_MSG (fghz >= 0.45 && fghz <= 6, "Frequency must be between 0.45 GHz and 6.0 GHz");
   double dist = a->GetDistanceFrom (b); 
-  std::cout << "Winner Plus Distance:" << dist<< std::endl;
-  double hbs = 10.0; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  double hbs = m_height_bs; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  Vector pos = a->GetPosition();
+  double height = pos.z;
+  double add_pathloss = 0.0;
   double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  if (height == 0.0){ // A UE height of 0.0m indicates indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for indoor penetration is given
+    //std::cout << "Indoor" << std::endl;
+    add_pathloss = 15.4;
+  }
+  else if (height < 0.0){ // A UE height of below 0.0m indicates deep indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for deep indoor penetration is given
+    //std::cout << "Deep Indoor" << std::endl;
+    add_pathloss = 20.9;
+  }
+  else if (height > 0.0){
+    hms = height;
+  }
+  
+  
 
   double dbp = 4*hbs*hms*fghz/3e8;
   double h_tick_bs = hbs - 1.0;
@@ -163,7 +206,15 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
     else if (m_los == false){
       if (fghz < 1.5){
-        loss = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
+        double a = (44.9 - 6.55 * std::log10(hbs)) ;
+        double b = std::log10(dist);
+        double c = 5.83 * std::log10(hbs);
+        double d = 16.33;
+        double e = 26.16 * std::log10(fghz);
+        std::cout << "fghz" << fghz << "hbs" << hbs << "dist" << dist << std::endl;
+        std::cout << a<<","<<b<<","<<c<<","<<d<<","<<e << std::endl;
+        loss = a*b+c+d+e;
+        //loss = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
       }
       else if (fghz < 2.0){
         loss = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 14.78 + 34.97 * std::log10(fghz);
@@ -188,8 +239,9 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
     loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
+  std::cout << "Winner Plus Distance:" << dist<< std::endl;
   std::cout << "Winner Plus Loss:" << loss<< std::endl;
-  loss = loss + m_add_pathloss;
+  loss = loss + add_pathloss;
   return loss;
 }
 
