@@ -93,21 +93,21 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   double dist = a->GetDistanceFrom (b); 
   double hbs = m_height_bs; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
   Vector pos = b->GetPosition();
-  std::cout << "Position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
+  //std::cout << "Position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
   double height = pos.z;
   double add_pathloss = 0.0;
   double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
   if (height == 0.0){ // A UE height of 0.0m indicates indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for indoor penetration is given
-    std::cout << "Indoor" << std::endl;
+    //std::cout << "Indoor" << std::endl;
     add_pathloss = 15.4;
   }
   else if (height < 0.0){ // A UE height of below 0.0m indicates deep indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for deep indoor penetration is given
-    std::cout << "Deep Indoor" << std::endl;
+    //std::cout << "Deep Indoor" << std::endl;
     add_pathloss = 20.9;
   }
   else if (height > 0.0){
     hms = height;
-    std::cout << "Outdoor" << std::endl;
+    //std::cout << "Outdoor" << std::endl;
   }
   
   
