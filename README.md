@@ -9,4 +9,5 @@ When devices are placed indoors, but O2I scenarios should not be used, then a fi
 
 
 [1] J. Meinila, et al. "D5. 3: WINNER+ final channel models." Wireless World Initiative New Radio WINNER, 2010, pp. 119-172.
+
 [2] S. Monhof, S. Böcker, J. Tiemann, and C. Wietfeld, “Cellular Network Coverage Analysis and Optimization in Challenging Smart Grid Environments,” in 2018 IEEE International Conference on Communications, Control, and Computing Technologies for Smart Grids (SmartGridComm), 2018, pp. 1–6.
