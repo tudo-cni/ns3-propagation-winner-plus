@@ -1,6 +1,6 @@
 /* -*-  Mode: C++; c-file-style: "gnu"; indent-tabs-mode:nil; -*- */
 /*
- * Copyright (c) 2011, 2012 Centre Tecnologic de Telecomunicacions de Catalunya (CTTC), 2021 TU Dortmund University
+ * Copyright (c) 2021 Communication Networks Institute at TU Dortmund University
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -15,9 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * Author: Marco Miozzo  <marco.miozzo@cttc.es>,
- *         Nicola Baldo <nbaldo@cttc.es>,
- *         Pascal Jörke <pascal.joerke@tu-dortmund.de>
+ * Author: Pascal Jörke <pascal.joerke@tu-dortmund.de>
  */
 #include "ns3/log.h"
 #include "ns3/double.h"
@@ -91,23 +89,19 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   double fghz = m_frequency / 1e9;
   NS_ASSERT_MSG (fghz >= 0.45 && fghz <= 6, "Frequency must be between 0.45 GHz and 6.0 GHz");
   double dist = a->GetDistanceFrom (b); 
-  double hbs = m_height_bs; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  double hbs = m_height_bs; 
   Vector pos = b->GetPosition();
-  //std::cout << "Position: " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
   double height = pos.z;
   double add_pathloss = 0.0;
-  double hms = 1.5; // Defined in WinnerPlus D5.3 v 1.0 Table 4-1. TODO: Flexible?
+  double hms = 1.5;
   if (height == 0.0){ // A UE height of 0.0m indicates indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for indoor penetration is given
-    //std::cout << "Indoor" << std::endl;
-    add_pathloss = 15.4;
+    add_pathloss = 15.4; // This is NOT part of the Winner+ models, but is derived from  S. Monhof, et al, “Cellular Network Coverage Analysis and Optimization in Challenging Smart Grid Environments,” in 2018 IEEE SmartGridComm, Oct 2018
   }
   else if (height < 0.0){ // A UE height of below 0.0m indicates deep indoor placement. When O2I scenarios shall not be used, then a fixed additional pathloss for deep indoor penetration is given
-    //std::cout << "Deep Indoor" << std::endl;
-    add_pathloss = 20.9;
+    add_pathloss = 20.9; // This is NOT part of the Winner+ models, but is derived from  S. Monhof, et al, “Cellular Network Coverage Analysis and Optimization in Challenging Smart Grid Environments,” in 2018 IEEE SmartGridComm, Oct 2018
   }
   else if (height > 0.0){
     hms = height;
-    //std::cout << "Outdoor" << std::endl;
   }
   
   
@@ -134,7 +128,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IaEnvironment){
-    double din = 3.0; // Let's assume that the indoor range is 3m
+    double din = 3.0; // Let's assume that the indoor range is 3m. This should be made dynamic in the future
     double dout = dist - din;
     double PLb = 0;
     if (fghz < 1.5){
@@ -180,14 +174,6 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
     else if (m_los == false){
       if (fghz < 1.5){
-        //double a = (44.9 - 6.55 * std::log10(hbs)) ;
-        //double b = std::log10(dist);
-        //double c = 5.83 * std::log10(hbs);
-        //double d = 16.33;
-        //double e = 26.16 * std::log10(fghz);
-        //std::cout << "fghz" << fghz << ", hbs" << hbs << ", dist" << dist << std::endl;
-        //std::cout << a<<","<<b<<","<<c<<","<<d<<","<<e << std::endl;
-        //loss = a*b+c+d+e;
         loss = (44.9 - 6.55 * std::log10(hbs)) * std::log10(dist) + 5.83 * std::log10(hbs) + 16.33 + 26.16 * std::log10(fghz);
       }
       else if (fghz < 2.0){
@@ -199,7 +185,7 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
   }
   else if (m_environment == O2IbEnvironment){
-    double din = 3.0; // Let's assume that the indoor range is 3m
+    double din = 3.0; // Let's assume that the indoor range is 3m. This should be made dynamic in the future
     double dout = dist - din;
     double PLb = 0;
     if (fghz < 1.5){
@@ -213,8 +199,6 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
     }
     loss = PLb*(dout + din) + 21.04 + 14*(1-1.8*std::log10(fghz)) + 0.5*din - 0.8*hms;
   }
-  //std::cout << "Winner Plus Distance:" << dist<< std::endl;
-  //std::cout << "Winner Plus Loss:" << loss<< std::endl;
   loss = loss + add_pathloss;
   return loss;
 }
