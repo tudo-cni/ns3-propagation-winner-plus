@@ -106,10 +106,10 @@ WinnerPlusPropagationLossModel::GetLoss (Ptr<MobilityModel> a, Ptr<MobilityModel
   
   
 
-  double dbp = 4*hbs*hms*fghz/3e8;
+  double dbp = 4*hbs*hms*m_frequency/3e8; // Note that the frequency must be in Hz, since it is divided by he speed of light in m/s
   double h_tick_bs = hbs - 1.0;
   double h_tick_ms = hms - 1.0;
-  double d_tick_bp = 4*h_tick_bs*h_tick_ms*fghz/3e8;
+  double d_tick_bp = 4*h_tick_bs*h_tick_ms*m_frequency/3e8; // Note that the frequency must be in Hz, since it is divided by he speed of light in m/s
   if (m_environment == UMiEnvironment){
     if (m_los == true){
       loss = 22.7 * std::log10(dist) + 27.0 + 20.0 * std::log10(fghz);
